@@ -52,6 +52,7 @@
     <Compile Include="Tempates\Player.cs" />
     <Compile Include="Tempates\Seasons.cs" />
     <Compile Include="Tempates\Stats.cs" />
+    <Compile Include="Tempates\Status.cs" />
     <Compile Include="Tempates\Telemetry.cs" />
     <Compile Include="Tempates\TelemetryBases.cs" />
     <Compile Include="Tempates\Tournament.cs" />

@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Drawing;
 using PUGBApi;
 using PUGBApi.Tempates;
 using System.Windows.Forms;
-using Newtonsoft.Json;
-using System.IO;
-using System.Diagnostics;
-using System.Runtime.Serialization.Formatters.Binary;
 
 namespace TestEnviroment
 {
@@ -54,11 +50,7 @@ namespace TestEnviroment
         private void backgroundWorker1_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
 
-
-
-            Players pr = cn.GetPlayersByName("OnlyHardCoree");
-            Tournaments tr = cn.GetTournaments();
-            Debug.WriteLine(cn.GetTournamentDetails(tr.data[0]));
+            
             
             
             
@@ -79,6 +71,20 @@ namespace TestEnviroment
                         arr[j + 1] = temp;
                     }
 
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Status st = cn.GetStatus();
+            if (st.active)
+            {
+                this.BackColor = Color.Green;
+            }
+            else
+            {
+                this.BackColor = Color.Red;
+            }
+            this.Text = Convert.ToString(st.responseTime);
         }
     }
 }

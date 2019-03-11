@@ -283,6 +283,34 @@ namespace PUGBApi
             return (result);
         }
 
+        public Status GetStatus()
+        {
+            string Response = string.Empty;
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://api.pubg.com/status");
+            request.AutomaticDecompression = DecompressionMethods.GZip;
+            request.Headers.Add("Authorization", "Bearer " + this.apiKey);
+            request.Accept = "application/vnd.api+json";
+            Stopwatch sw = new Stopwatch();
+            Status result = new Status();
+            sw.Start();
+            try
+            {
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                using (Stream stream = response.GetResponseStream())
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    Response = reader.ReadToEnd();
+                }
+                sw.Stop();
+                result.active = true;
+            }
+            catch
+            {
+                result.active = false;
+            }
+            result.responseTime = sw.ElapsedMilliseconds;
+            return (result);
+        }
 
 
         public delegate void ProgressBarEvent(int ammout, bool isMax);
