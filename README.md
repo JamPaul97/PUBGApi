@@ -1,2 +1,2 @@
 # PUGBApi
-PUGB Api
+PUGB Api for .net applications
