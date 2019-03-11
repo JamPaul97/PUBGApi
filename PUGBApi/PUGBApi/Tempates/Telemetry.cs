@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using PUGBApi.Tempates;
-using PUGBApi;
+using PUBGApi.Tempates;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PUGBApi.Tempates
+namespace PUBGApi.Tempates
 {
     [Serializable]
     public class Telemetry

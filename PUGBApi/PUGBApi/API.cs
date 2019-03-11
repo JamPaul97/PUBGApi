@@ -1,13 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Net;
-using PUGBApi.Tempates;
+using PUBGApi.Tempates;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows;
 
-namespace PUGBApi
+namespace PUBGApi
 {
     public class Connector
     {
