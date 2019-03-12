@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
-using PUGBApi;
-using PUGBApi.Tempates;
+using PUBGApi;
+using PUBGApi.Tempates;
 using System.Windows.Forms;
 
 namespace TestEnviroment

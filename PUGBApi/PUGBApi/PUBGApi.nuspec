@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+	<licenseUrl>https://raw.githubusercontent.com/JamPaul97/PUBGApi/master/license/license.txt</licenseUrl>
+    <projectUrl>https://github.com/JamPaul97/PUBGApi</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <releaseNotes>First beta release</releaseNotes>
+    <copyright>Copyright 2019</copyright>
+    <tags>pubg api PUBG jampaul jampaul97 PUBGApi</tags>
+  </metadata>
+</package>

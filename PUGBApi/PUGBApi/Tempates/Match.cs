@@ -31,6 +31,7 @@ namespace PUBGApi.Tempates
         }
         public class Attributes
         {
+            public string actor = string.Empty;
             public string createdAt = string.Empty;
             public string shardId = string.Empty;
             public bool isCustomMatch = false;
