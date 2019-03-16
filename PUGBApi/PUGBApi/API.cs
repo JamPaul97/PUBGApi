@@ -19,7 +19,7 @@ namespace PUBGApi
         {
             @as,eu,jp,kakao,krjp,na,oc,ru,sa,sea,tournament
         }
-        public enum Gamemode
+        public enum Gamemodes
         {
             solo, solo_fpp,duo, duo_fpp,squad, squad_fpp
         }
@@ -374,29 +374,29 @@ namespace PUBGApi
         /// </summary>
         /// <param name="gm">Gamemode to get lifetime stats</param>
         /// <returns>Lifetime</returns>
-        public Lifetime GetLifetimeStats(Gamemode gm)
+        public Lifetime GetLifetimeStats(Gamemodes gm)
         {
 
             string gamemode = string.Empty;
             changeProgress(0, 3, "Selecting gamemode");
             switch (gm)
             {
-                case Gamemode.solo:
+                case Gamemodes.solo:
                     gamemode = "solo";
                     break;
-                case Gamemode.duo:
+                case Gamemodes.duo:
                     gamemode = "duo";
                     break;
-                case Gamemode.squad:
+                case Gamemodes.squad:
                     gamemode = "squad";
                     break;
-                case Gamemode.solo_fpp:
+                case Gamemodes.solo_fpp:
                     gamemode = "solo-fpp";
                     break;
-                case Gamemode.duo_fpp:
+                case Gamemodes.duo_fpp:
                     gamemode = "duo-fpp";
                     break;
-                case Gamemode.squad_fpp:
+                case Gamemodes.squad_fpp:
                     gamemode = "squad-fpp";
                     break;
                 default:
