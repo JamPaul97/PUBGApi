@@ -15,7 +15,7 @@ namespace PUBGApi
         private string apiKey = string.Empty;
         private Shards shard;
         private Regions region;
-        private string Shard;
+        private string shardString;
         #endregion
 
         #region "Public Variables"
@@ -81,7 +81,7 @@ namespace PUBGApi
             this.apiKey = apiKey;
             this.shard = shard;
             this.region = region;
-            this.Shard = this.shard + "-" + this.region;
+            this.shardString = this.shard + "-" + this.region;
         }
         #endregion
 
