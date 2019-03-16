@@ -16,7 +16,6 @@ namespace PUBGApi
         private Shards shard;
         private Regions region;
         private string Shard;
-        private bool hasEvents = false;
         #endregion
 
         #region "Public Variables"
