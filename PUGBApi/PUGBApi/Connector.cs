@@ -5,29 +5,72 @@ using PUBGApi.Tempates;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Windows;
+using PUBGApi.Enumrations;
 
 namespace PUBGApi
 {
     public class Connector
     {
-        public enum Shards
-        {
-            steam,psn,kakao,tournament,xbox
-        }
-        public enum Regions
-        {
-            @as,eu,jp,kakao,krjp,na,oc,ru,sa,sea,tournament
-        }
-        public enum Gamemode
-        {
-            solo, solo_fpp,duo, duo_fpp,squad, squad_fpp
-        }
+        #region "Private Variables"
         private string apiKey = string.Empty;
         private Shards shard;
         private Regions region;
         private string Shard;
         private bool hasEvents = false;
+        #endregion
+
+        #region "Public Variables"
+        /// <summary>
+        /// Check if there is a connection to the API servers
+        /// </summary>
+        public bool isApiGood
+        {
+            get
+            {
+                System.Net.NetworkInformation.Ping sender = new System.Net.NetworkInformation.Ping();
+                System.Net.NetworkInformation.PingReply reply = null;
+                try
+                {
+                    reply = new System.Net.NetworkInformation.Ping().Send(URLs.GenerateDomain(), 500);
+                }
+                catch
+                {
+                    return false;
+                }
+                if (reply.Status == System.Net.NetworkInformation.IPStatus.Success)
+                {
+                    return true;
+                }
+                else return false;
+            }
+        }
+        /// <summary>
+        /// Check the latency to the API servers
+        /// </summary>
+        public int ApiLatency
+        {
+            get
+            {
+                System.Net.NetworkInformation.Ping sender = new System.Net.NetworkInformation.Ping();
+                System.Net.NetworkInformation.PingReply reply = null;
+                try
+                {
+                    reply = new System.Net.NetworkInformation.Ping().Send(URLs.GenerateDomain(), 500);
+                }
+                catch
+                {
+                    return -1;
+                }
+                if (reply.Status == System.Net.NetworkInformation.IPStatus.Success)
+                {
+                    return Convert.ToInt32(reply.RoundtripTime);
+                }
+                else return -1;
+            }
+        }
+        #endregion
+
+        #region "Constructors"
         /// <summary>
         /// Connector Constructor
         /// </summary>
@@ -41,43 +84,26 @@ namespace PUBGApi
             this.region = region;
             this.Shard = this.shard + "-" + this.region;
         }
-        /// <summary>
-        /// Connector Constructor
-        /// </summary>
-        /// <param name="apiKey">the api key used to make authorized calls</param>
-        /// <param name="shard">the shard used to make calls</param>
-        /// <param name="region">the region used to make calls</param>
-        /// <param name="withEvents">Have events raised</param>
-        public Connector(string apiKey, Shards shard, Regions region, bool withEvents)
-        {
-            this.apiKey = apiKey;
-            this.shard = shard;
-            this.region = region;
-            this.hasEvents = withEvents;
-            this.Shard = this.shard + "-" + this.region;
-        }
+        #endregion
 
+        #region "Public Functions"
         /// <summary>
         /// Retun a list of players searced by their name
         /// </summary>
         /// <param name="name">Player name to search for</param>
         /// <returns>List Players</returns>
-        public Players GetPlayersByName(string name)
+        public Players GetPlayersByName(string[] names)
         {
-            changeProgress(0, 2, "Generating URL");
-            string url = "https://api.pubg.com/shards/" + this.shard.ToString() + "/players?filter[playerNames]=" + name;
-            changeProgress(1, 2, "Making Request to API");
-            Players pr;
+            string url = URLs.GenerateSearchPlayersByNameUrl(names, this.shard);
+            Players pr = null;
             try
             {
                 pr = JsonConvert.DeserializeObject<Players>(request(url));
             }
-            catch(WebException ex)
+            catch (WebException ex)
             {
-                changeProgress(2, 2, "Error");
-                throw new Exception(ex.Message);
+                handleRequextException(ex);
             }
-            changeProgress(2, 2, "Done");
             return pr;
         }
         /// <summary>
@@ -85,22 +111,18 @@ namespace PUBGApi
         /// </summary>
         /// <param name="name">Player accoutID to search for</param>
         /// <returns>List Players</returns>
-        public Players GetPlayerByAccountID(string accountID)
+        public Players GetPlayerByAccountID(string[] accountIDs)
         {
-            changeProgress(0, 2, "Generating URL");
-            string url = "https://api.pubg.com/shards/" + this.Shard + "/players?filter[playerIds]=" + accountID;
-            changeProgress(1, 2, "Making request to API");
-            Players pr = new Players();
+            string url = URLs.GenerateSearchPlayersByAccountID(accountIDs, this.shard);
+            Players pr = null;
             try
             {
                 pr = JsonConvert.DeserializeObject<Players>(request(url));
             }
             catch (WebException ex)
             {
-                changeProgress(2, 2, "Error");
                 handleRequextException(ex);
             }
-            changeProgress(2, 2, "Done");
             return pr;
         }
         /// <summary>
@@ -110,46 +132,38 @@ namespace PUBGApi
         /// <returns>List Matches</returns>
         public List<Match> GetMatchesByPlayer(Players.Player player)
         {
-            changeProgress(0, player.relationships.matches.data.Count+1, "Making list");
+            string[] urls = URLs.GenerateMatch(player, this.shard);
             List<Match> matches = new List<Match>();
-            for(int i =0; i <= player.relationships.matches.data.Count-1;i++)
+            for (int i = 0; i <= urls.Length - 1; i++)
             {
                 try
                 {
-                    matches.Add(JsonConvert.DeserializeObject<Match>(request(string.Format("https://api.pubg.com/shards/{0}/matches/{1}", this.shard, player.relationships.matches.data[i].id))));
+                    matches.Add(JsonConvert.DeserializeObject<Match>(request(urls[i])));
                 }
-                catch(WebException ex)
+                catch (WebException ex)
                 {
-                    changeProgress(player.relationships.matches.data.Count, player.relationships.matches.data.Count, "Error");
                     handleRequextException(ex);
                 }
-                
-                changeProgress(i+1, player.relationships.matches.data.Count, "Player added");
             }
-            changeProgress(player.relationships.matches.data.Count, player.relationships.matches.data.Count, "Done");
             return (matches);
         }
         /// <summary>
-        /// Get a match from its id
+        /// Get a match details from its id
         /// </summary>
         /// <param name="id">The match id</param>
         /// <returns>Match</returns>
-        public Match GetMatchById(string id)
+        public Match GetMatchDetailsById(string MatchID)
         {
-            changeProgress(0, 2, "Generating URL");
-            string url = (string.Format("https://api.pubg.com/shards/{0}/matches/{1}", this.shard, id));
+            string url = URLs.GenerateMatchByID(MatchID, this.shard);
             Match temp = new Match();
             try
             {
-                changeProgress(2, 2, "Making request to API");
                 temp = JsonConvert.DeserializeObject<Match>(request(url));
             }
-            catch(WebException ex)
+            catch (WebException ex)
             {
-                changeProgress(2, 2, "Error");
                 handleRequextException(ex);
             }
-            changeProgress(2, 2, "Done");
             return temp;
         }
         /// <summary>
@@ -159,25 +173,19 @@ namespace PUBGApi
         /// <returns>Telemetry</returns>
         public Telemetry GetTelemetry(Match match)
         {
-            changeProgress(0, 2, "Making URL");
-            string url = GetTelemetryUrlFromMatch(match);
+            string url = URLs.GenerateTelemetryUrlFromMatch(match);
             dynamic WholeObject = null;
             try
             {
-                changeProgress(1, 2, "Making request to API");
                 WholeObject = JsonConvert.DeserializeObject<dynamic>(request(url));
             }
-            catch(WebException ex)
+            catch (WebException ex)
             {
-                changeProgress(2, 2, "Error");
                 handleRequextException(ex);
             }
-            changeProgress(0, WholeObject.Count+1, "Making telemetry object");
             Telemetry Object = new Telemetry();
-            int counter = 1;
             foreach (dynamic temp in WholeObject)
             {
-                changeProgress(counter, WholeObject.Count+1, "Error");
                 string type = temp.@_T;
                 try
                 {
@@ -292,12 +300,9 @@ namespace PUBGApi
                 }
                 catch
                 {
-                    changeProgress(WholeObject.Count+1, WholeObject.Count+1, "Error");
                     throw new RequestException("There was an error desirializing the telemetry json");
                 }
-                counter++;
             }
-            changeProgress(WholeObject.Count+1, WholeObject.Count+1, "Done");
             return (Object);
         }
         /// <summary>
@@ -306,20 +311,16 @@ namespace PUBGApi
         /// <returns>Seasons</returns>
         public Seasons GetSeasons()
         {
-            changeProgress(1, 2, "Genarating URL");
-            string url = "https://api.pubg.com/shards/" + this.shard +"/seasons";
+            string url = URLs.GenerateSeasons(this.shard);
             Seasons result = new Seasons();
             try
             {
-                changeProgress(1, 2, "Making request to API");
                 result = JsonConvert.DeserializeObject<Seasons>(request(url));
             }
-            catch(WebException ex)
+            catch (WebException ex)
             {
-                changeProgress(2, 2, "Error");
                 handleRequextException(ex);
             }
-            changeProgress(2, 2, "Done");
             return (result);
         }
         /// <summary>
@@ -330,20 +331,16 @@ namespace PUBGApi
         /// <returns>Stats</returns>
         public Stats GetPlayerSeasonStats(Players.Player player, Seasons.Season season)
         {
-            changeProgress(0, 2, "Generating URL");
-            string url = string.Format("https://api.pubg.com/shards/{0}/players/{1}/seasons/{2}", this.shard , player.id, season.id);
+            string url = URLs.GeneratePlayerSeasonStats(player, season, this.shard);
             Stats result = new Stats();
             try
             {
-                changeProgress(1, 2, "Making request to API");
                 result = JsonConvert.DeserializeObject<Stats>(request(url));
             }
-            catch(WebException ex)
+            catch (WebException ex)
             {
-                changeProgress(2, 2, "Error");
                 handleRequextException(ex);
             }
-            changeProgress(2, 2, "Done");
             return (result);
         }
         /// <summary>
@@ -351,22 +348,18 @@ namespace PUBGApi
         /// </summary>
         /// <param name="player">Players to get lifetime stats</param>
         /// <returns>Stats</returns>
-        public Stats GetPlayerLefetimeStats(Players.Player player)
+        public Stats GetPlayerLifetimeStats(Players.Player player)
         {
-            changeProgress(0, 2, "Generating URL");
-            string url = string.Format("https://api.pubg.com/shards/{0}/players/{1}/seasons/lifetime", this.shard, player.id);
+            string url = URLs.GeneratePlayerLifetimeStats(player, this.shard);
             Stats result = new Stats();
             try
             {
-                changeProgress(1, 2, "Making request to API");
                 result = JsonConvert.DeserializeObject<Stats>(request(url));
             }
-            catch(WebException ex)
+            catch (WebException ex)
             {
-                changeProgress(2, 2, "Error");
                 handleRequextException(ex);
             }
-            changeProgress(2, 2, "Done");
             return (result);
         }
         /// <summary>
@@ -377,46 +370,16 @@ namespace PUBGApi
         public Lifetime GetLifetimeStats(Gamemode gm)
         {
 
-            string gamemode = string.Empty;
-            changeProgress(0, 3, "Selecting gamemode");
-            switch (gm)
-            {
-                case Gamemode.solo:
-                    gamemode = "solo";
-                    break;
-                case Gamemode.duo:
-                    gamemode = "duo";
-                    break;
-                case Gamemode.squad:
-                    gamemode = "squad";
-                    break;
-                case Gamemode.solo_fpp:
-                    gamemode = "solo-fpp";
-                    break;
-                case Gamemode.duo_fpp:
-                    gamemode = "duo-fpp";
-                    break;
-                case Gamemode.squad_fpp:
-                    gamemode = "squad-fpp";
-                    break;
-                default:
-                    gamemode = "solo";
-                    break;
-            }
-            changeProgress(1, 3, "Generating URL");
-            string url = "https://api.pubg.com/shards/" + this.shard + "/leaderboards/" + gamemode;
+            string url = URLs.GenerateLifetimeStats(gm, this.shard);
             Lifetime result = new Lifetime();
             try
             {
-                changeProgress(2, 3, "Making request to API");
                 result = JsonConvert.DeserializeObject<Lifetime>(request(url));
             }
-            catch(WebException ex)
+            catch (WebException ex)
             {
-                changeProgress(3, 3, "Error");
                 handleRequextException(ex);
             }
-            changeProgress(3, 3, "Done");
             return (result);
         }
         /// <summary>
@@ -425,20 +388,16 @@ namespace PUBGApi
         /// <returns>Tournamets</returns>
         public Tournaments GetTournaments()
         {
-            changeProgress(0, 2, "Generating URL");
-            string url = "https://api.pubg.com/tournaments";
+            string url = URLs.GenerateTournaments();
             Tournaments result = new Tournaments();
             try
             {
-                changeProgress(1, 2, "Making request to API");
                 result = JsonConvert.DeserializeObject<Tournaments>(request(url));
             }
-            catch(WebException ex)
+            catch (WebException ex)
             {
-                changeProgress(2, 2, "Error");
                 handleRequextException(ex);
             }
-            changeProgress(2, 2, "Done");
             return (result);
         }
         /// <summary>
@@ -448,20 +407,16 @@ namespace PUBGApi
         /// <returns>Tournament</returns>
         public Tournament GetTournamentDetails(Tournaments.Tournament tournament)
         {
-            changeProgress(0, 2, "Generating URL");
-            string url = "https://api.pubg.com/tournaments/" + tournament.id;
+            string url = URLs.GenerateTournamentDetails(tournament);
             Tournament result = new Tournament();
             try
             {
-                changeProgress(1, 2, "Making request to API");
                 result = JsonConvert.DeserializeObject<Tournament>(request(url));
             }
-            catch(WebException ex)
+            catch (WebException ex)
             {
-                changeProgress(2, 2, "Error");
                 handleRequextException(ex);
             }
-            changeProgress(2, 2, "Done");
             return (result);
         }
         /// <summary>
@@ -470,9 +425,8 @@ namespace PUBGApi
         /// <returns>Status</returns>
         public Status GetStatus()
         {
-            changeProgress(0, 3, "Collecting information about the request");
             string Response = string.Empty;
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://api.pubg.com/status");
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(URLs.GenerateStatus());
             request.AutomaticDecompression = DecompressionMethods.GZip;
             request.Headers.Add("Authorization", "Bearer " + this.apiKey);
             request.Accept = "application/vnd.api+json";
@@ -481,12 +435,10 @@ namespace PUBGApi
             Status result = new Status();
             try
             {
-                changeProgress(1, 3, "Making request to API");
                 using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
                 using (Stream stream = response.GetResponseStream())
                 using (StreamReader reader = new StreamReader(stream))
                 {
-                    changeProgress(2, 3, "Got response from API");
                     Response = reader.ReadToEnd();
                 }
                 sw.Stop();
@@ -494,49 +446,16 @@ namespace PUBGApi
             }
             catch
             {
-                changeProgress(3, 3, "Error");
                 result.active = false;
             }
-            changeProgress(3, 3, "Response OK");
             result.responseTime = sw.ElapsedMilliseconds;
             return (result);
         }
 
-
-        #region "Events"
-        public delegate void ProgressChangeDLG(Progress progress);
-        /// <summary>
-        /// Event raised on progress change
-        /// </summary>
-        public event ProgressChangeDLG ProgressChange;
-        public void OnProgressChange(Progress progress)
-        {
-            ProgressChangeDLG handler = ProgressChange;
-            if (handler != null)
-            {
-                handler(progress);
-            }
-        }
-
         #endregion
 
-
         #region "Private Functions"
-        private string GetTelemetryUrlFromMatch(Match match)
-        {
-            foreach (Match.Data data in match.data.relationships.assets.data)
-            {
-                foreach (dynamic obj in match.included)
-                {
-                    if (data.id == obj.id)
-                    {
-
-                        return (obj.attributes.URL);
-                    }
-                }
-            }
-            return (string.Empty);
-        }
+        
         private string request(string url)
         {
             string Response = string.Empty;
@@ -553,25 +472,17 @@ namespace PUBGApi
 
             return (Response);
         }
-        private void changeProgress(int current, int max, string message)
-        {
-            if (hasEvents)
-            {
-                Progress pr = new Progress();
-                pr.Maximum = max;
-                pr.Value = current;
-                pr.Message = message;
-                OnProgressChange(pr);
-            }
-        }
         private void handleRequextException(WebException ex)
         {
-
+            if (ex.Message.Contains("401")){throw new RequestException("API key invalid or missing");}
+            else if (ex.Message.Contains("404")) { throw new RequestException("The specified resource was not found"); }
+            else if (ex.Message.Contains("415")) { throw new RequestException("Content type incorrect or not specified"); }
+            else if (ex.Message.Contains("429")) { throw new RequestException("Too many requests"); }
+            else { throw new RequestException(ex.Message); }
         }
         #endregion
 
-
-
+        //These functions is used by the Telemetry constructor to desirialize the Telemetry JSON
         #region "Telemetry Constructors"
         private TelemetryBases.MatchDefinition GetMatchDefinition(dynamic obj)
         {
@@ -1057,9 +968,5 @@ namespace PUBGApi
         }
         #endregion
 
-
-
-
     }
-
 }

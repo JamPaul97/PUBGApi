@@ -30,6 +30,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\PUBGApi.xml</DocumentationFile>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -45,7 +46,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="API.cs" />
+    <Compile Include="Connector.cs" />
+    <Compile Include="Enumrations\Shards.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tempates\DateStamp.cs" />
     <Compile Include="Tempates\Lifetime.cs" />
@@ -60,6 +62,7 @@
     <Compile Include="Tempates\TelemetryBases.cs" />
     <Compile Include="Tempates\Tournament.cs" />
     <Compile Include="Tempates\Tournaments.cs" />
+    <Compile Include="Tempates\URLs.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

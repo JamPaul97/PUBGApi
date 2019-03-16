@@ -1,90 +1,147 @@
 ﻿using System;
-using System.Drawing;
+using System.Diagnostics;
 using PUBGApi;
+using System.Text.RegularExpressions;
 using PUBGApi.Tempates;
+using TestEnviroment.Bodys;
 using System.Windows.Forms;
+using Newtonsoft.Json;
+using PUBGApi.Enumrations;
 
 namespace TestEnviroment
 {
     public partial class Form1 : Form
     {
-        int max = 100;
-        int value = 0;
-        Connector cn = new Connector("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI4NGFjNDgwMC1kZDU4LTAxMzYtOTRmZi0xZDg1OGQxMzk3ZGMiLCJpc3MiOiJnYW1lbG9ja2VyIiwiaWF0IjoxNTQ0MzAyMDk5LCJwdWIiOiJibHVlaG9sZSIsInRpdGxlIjoicHViZyIsImFwcCI6InB1Z2ItbmV0In0.xIdyJslEYHq_WLL_TjrjfQJ177GcDD9BoPM9SoNntcw", Connector.Shards.steam, Connector.Regions.eu);
+        Connector cn = new Connector("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI4NGFjNDgwMC1kZDU4LTAxMzYtOTRmZi0xZDg1OGQxMzk3ZGMiLCJpc3MiOiJnYW1lbG9ja2VyIiwiaWF0IjoxNTQ0MzAyMDk5LCJwdWIiOiJibHVlaG9sZSIsInRpdGxlIjoicHViZyIsImFwcCI6InB1Z2ItbmV0In0.xIdyJslEYHq_WLL_TjrjfQJ177GcDD9BoPM9SoNntcw",Shards.steam, Regions.eu);
+        TreeView sharedTree;
         public Form1()
         {
             InitializeComponent();
             //cn.UpdateProgress += updateProgress;
         }
+        public void getMatchDetails(string matchID)
+        {
+            result2.Controls.Clear();
+            sharedTree = null;
+            PUBGApi.Tempates.Match ma = cn.GetMatchDetailsById(matchID);
 
+            TreeView tv = new TreeView();
+            TreeNode rosters = new TreeNode();
+            rosters.Text = "Rosters";
+            TreeNode participants = new TreeNode();
+            participants.Text = "Participants";
+            foreach (PUBGApi.Tempates.Match.Data x in ma.included)
+            {
+                TreeNode temp = new TreeNode();
+                temp.Text = x.id;
+                if(x.type == "roster")
+                {
+                    dynamic obj = JsonConvert.DeserializeObject<dynamic>(JsonConvert.SerializeObject(x.attributes.stats));
+                    if (obj != null)
+                    {
+                        foreach (dynamic te in obj)
+                        {
+                            TreeNode temp2 = new TreeNode();
+                            temp2.Text = Convert.ToString(te);
+                            temp.Nodes.Add(temp2);
+                        }
+                    }
+                    rosters.Nodes.Add(temp);
+                }
+                else
+                {
+                    dynamic obj = JsonConvert.DeserializeObject<dynamic>(JsonConvert.SerializeObject(x.attributes.stats));
+                    if (obj != null)
+                    {
+                        foreach (dynamic te in obj)
+                        {
+                            TreeNode temp2 = new TreeNode();
+                            temp2.Text = Convert.ToString(te);
+                            temp.Nodes.Add(temp2);
+                        }
+                    }
+                    participants.Nodes.Add(temp);
+                }
+
+            }
+            tv.Nodes.Add(participants);
+            tv.Nodes.Add(rosters);
+            tv.Size = result2.Size;
+            tv.AfterSelect += onNodeMouseClick;
+            tv.ContextMenuStrip = contextMenuStrip1;
+            result2.Controls.Add(tv);
+            sharedTree = tv;
+        }
+        public void handleTelemetry(string matchID)
+        {
+            result2.Controls.Clear();
+        }
+        public void onNodeMouseClick(object sender, TreeViewEventArgs e)
+        {
+            Debug.WriteLine(e.Node.Text);
+        }
         private void Form1_Load(object sender, EventArgs e)
         {
             CheckForIllegalCrossThreadCalls = false;
             backgroundWorker1.RunWorkerAsync();
             
         }
-        public void updateProgress(int value, bool isMax)
+
+        private void Form1_SizeChanged(object sender, EventArgs e)
         {
-            if(isMax)
+            int x = this.Width;
+            int y = this.Height;
+            result1.Size = new System.Drawing.Size(((x - 190) / 2), y);
+            result2.Size = new System.Drawing.Size(((x - 190) / 2) - 25, y);
+        }
+
+        private void searchToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            searchPlayer("fcbergi");
+        }
+        public void searchPlayer(string name)
+        {
+            string[] names = { name };
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            Players pr = cn.GetPlayersByName(names);
+            sw.Stop();
+            PlayersForm fr = new PlayersForm(pr, string.Format("It took {0}ms to make the search", sw.ElapsedMilliseconds), getMatchDetails, handleTelemetry);
+            result1.Controls.Add(fr);
+        }
+        public void searchPlayerID(string id)
+        {
+            string[] names = { id };
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            Players pr = cn.GetPlayerByAccountID(names);
+            sw.Stop();
+            PlayersForm fr = new PlayersForm(pr, string.Format("It took {0}ms to make the search", sw.ElapsedMilliseconds), getMatchDetails, handleTelemetry);
+            result1.Controls.Add(fr);
+
+        }
+        private void searchPlayerToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if(sharedTree != null && sharedTree.SelectedNode != null)
             {
-                progressBar1.Maximum = value;
-            }
-            else
-            {
-                label1.Text = string.Format("Items {0} / {1}", value, progressBar1.Maximum);
-                progressBar1.Value = value;
-            }
-
-        }
-        public class DateStamp
-        {
-            public int Year = 0;
-            public int Month = 0;
-            public int Day = 0;
-            public int Hour = 0;
-            public int Minute = 0;
-            public int Second = 0;
-            public int Miliseconds = 0;
-        }
-
-        private void backgroundWorker1_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
-        {
-
-            
-            
-            
-            
-            //List<Match> matches = cn.GetMatchesByPlayer(pr);
-            //Telemetry match = cn.GetTelemetry(matches[0]);
-
-        }
-        static void bubbleSort(float[] arr)
-        {
-            int n = arr.Length;
-            for (int i = 0; i < n - 1; i++)
-                for (int j = 0; j < n - i - 1; j++)
-                    if (arr[j] > arr[j + 1])
+                string b = sharedTree.SelectedNode.Text;
+                if(b.Contains("playerId"))
+                {
+                    Regex regex = new Regex(@"(account.+[^\\""])");
+                    System.Text.RegularExpressions.Match match = regex.Match(b);
+                    if (match.Success)
                     {
-                        // swap temp and arr[i] 
-                        float temp = arr[j];
-                        arr[j] = arr[j + 1];
-                        arr[j + 1] = temp;
+                        string account = match.Value;
+                        result1.Controls.Clear();
+                        searchPlayerID(account);
                     }
-
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            Status st = cn.GetStatus();
-            if (st.active)
-            {
-                this.BackColor = Color.Green;
+                }
+                else
+                {
+                    MessageBox.Show(this,"Select a valid player to search for", "No valid players selected",MessageBoxButtons.OK,MessageBoxIcon.Error);
+                }
             }
-            else
-            {
-                this.BackColor = Color.Red;
-            }
-            this.Text = Convert.ToString(st.responseTime);
+           
         }
     }
 }
