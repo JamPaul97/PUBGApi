@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using PUBGApi.Tempates;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using PUBGApi.Models;
 
-namespace PUBGApi.Tempates
+namespace PUBGApi.Models
 {
     [Serializable]
     public class Telemetry

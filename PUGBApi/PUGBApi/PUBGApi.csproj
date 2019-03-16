@@ -49,20 +49,20 @@
     <Compile Include="Connector.cs" />
     <Compile Include="Enumerations\Enumerations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Tempates\DateStamp.cs" />
-    <Compile Include="Tempates\Lifetime.cs" />
-    <Compile Include="Tempates\Match.cs" />
-    <Compile Include="Tempates\Player.cs" />
-    <Compile Include="Tempates\Progress.cs" />
-    <Compile Include="Tempates\RequestException.cs" />
-    <Compile Include="Tempates\Seasons.cs" />
-    <Compile Include="Tempates\Stats.cs" />
-    <Compile Include="Tempates\Status.cs" />
-    <Compile Include="Tempates\Telemetry.cs" />
-    <Compile Include="Tempates\TelemetryBases.cs" />
-    <Compile Include="Tempates\Tournament.cs" />
-    <Compile Include="Tempates\Tournaments.cs" />
-    <Compile Include="Tempates\URLs.cs" />
+    <Compile Include="Models\DateStamp.cs" />
+    <Compile Include="Models\Lifetime.cs" />
+    <Compile Include="Models\Match.cs" />
+    <Compile Include="Models\Player.cs" />
+    <Compile Include="Models\Progress.cs" />
+    <Compile Include="Models\RequestException.cs" />
+    <Compile Include="Models\Seasons.cs" />
+    <Compile Include="Models\Stats.cs" />
+    <Compile Include="Models\Status.cs" />
+    <Compile Include="Models\Telemetry.cs" />
+    <Compile Include="Models\TelemetryBases.cs" />
+    <Compile Include="Models\Tournament.cs" />
+    <Compile Include="Models\Tournaments.cs" />
+    <Compile Include="Models\URLs.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

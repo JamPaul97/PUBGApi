@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace PUBGApi.Tempates
+namespace PUBGApi.Models
 {
     public class Stats
     {

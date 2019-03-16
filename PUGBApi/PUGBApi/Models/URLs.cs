@@ -1,9 +1,9 @@
 ﻿using System;
 using PUBGApi;
-using PUBGApi.Enumrations;
-using PUBGApi.Tempates;
+using PUBGApi.Enumerations;
+using PUBGApi.Models;
 
-namespace PUBGApi.Tempates
+namespace PUBGApi.Models
 {
     public static class URLs
     {

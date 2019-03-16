@@ -1,11 +1,11 @@
 ﻿using System;
 using System.IO;
 using System.Net;
-using PUBGApi.Tempates;
+using PUBGApi.Models;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Diagnostics;
-using PUBGApi.Enumrations;
+using PUBGApi.Enumerations;
 
 namespace PUBGApi
 {
